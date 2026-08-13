@@ -14,7 +14,6 @@ def add_expense(wallet_name:str, amount:float) -> float:
     BALANCE[wallet_name] -= amount
     return BALANCE[wallet_name]
 
-
 def get_all_wallets() -> dict[str, float]:
     return BALANCE.copy()
 
