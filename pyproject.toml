@@ -1,0 +1,22 @@
+[project]
+name = "bank-account"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Cuschevici Climent", email = "kuskevichklim@mail.ru" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.141.1",
+    "pydantic>=2.13.4",
+    "sqlalchemy>=2.0.52",
+    "uvicorn>=0.52.2",
+]
+
+[project.scripts]
+bank-account = "bank_account:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
