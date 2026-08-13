@@ -1,28 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
-
+from fastapi import APIRouter
+from app.services import wallets as wallets_service
 from app.schemas import CreateWalletRequest
-router = APIRouter()
 
-BALANCE = {}
+router = APIRouter()
 
 @router.get('/balance')
 def get_balance(wallet_name:str|None = None):
-    if wallet_name is None:
-        return {'total_balance': sum(BALANCE.values())}
-    if wallet_name not in BALANCE:
-        raise HTTPException(status_code=404, detail=f'Wallet {wallet_name} not found')
-
-    return {'wallet':wallet_name, 'balance':BALANCE[wallet_name]}
-
+    return wallets_service.get_balance(wallet_name)
 
 @router.post('/wallets')
 def create_wallet(wallet:CreateWalletRequest):
-    if wallet.name in BALANCE:
-        raise HTTPException(status_code=400, detail= f'Wallet {wallet.name} already exists')
-
-    BALANCE[wallet.name] = wallet.initial_balance
-    return {
-        'message':f'Wallet {wallet.name} created',
-        'wallet' : wallet.name,
-        'balance': BALANCE[wallet.name]
-    }
+    return wallets_service.create_wallet(wallet)
