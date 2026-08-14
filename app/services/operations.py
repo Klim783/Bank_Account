@@ -39,7 +39,7 @@ def add_expense(db: Session, current_user: User,operation: OperationRequest):
     return {
         'message': 'Expense added',
         'wallet': operation.wallet_name,
-        'balance': operation.amount,
+        'amount': operation.amount,
         'description': operation.description,
         'new_balance': wallet.balance
     }
