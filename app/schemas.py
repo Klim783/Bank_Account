@@ -36,4 +36,10 @@ class CreateWalletRequest(BaseModel):
         return v
 
 
+class UserRequest(BaseModel):
+    login: str = Field(..., max_length=127)
+
+
+
+
 
