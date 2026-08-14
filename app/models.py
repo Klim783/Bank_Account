@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey
-
+from datetime import datetime
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from decimal import Decimal
@@ -24,3 +24,14 @@ class Wallet(Base):
     user_id : Mapped[int] = mapped_column(ForeignKey('user.id'), nullable = False)
 
     currency : Mapped[CurrencyEnum]
+
+
+class Operation(Base):
+    __tablename__ = 'operation'
+    id : Mapped[int] = mapped_column(primary_key=True)
+    wallet_id : Mapped[int] = mapped_column(ForeignKey('wallet.id'), nullable = False)
+    type:Mapped[Decimal]
+    currency: Mapped[CurrencyEnum] = mapped_column(default = None)
+    category: Mapped[str|None] = mapped_column(default=None)
+    created_at: Mapped[datetime] = mapped_column(default=lambda : datetime.now())
+

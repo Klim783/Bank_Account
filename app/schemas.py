@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field, field_validator
 from decimal import Decimal
 
@@ -49,8 +51,23 @@ class UserResponse(UserRequest):
     model_config = {'from_attributes':True} #sqlalchemy model into pydantic model
     id:int
 
+class WalletResponse(BaseModel):
+    model_config = {'from_attributes': True}
+    id: int
+    name:str
+    balance:Decimal
+    currency: CurrencyEnum
 
 
 
-
-
+class OperationResponse(BaseModel):
+    model_config = {
+        'from_attributes': True}
+    id:int
+    wallet_id:int
+    type:str
+    amount:Decimal
+    currency:CurrencyEnum
+    category : str|None
+    subcategory : str|None
+    created_at:datetime
