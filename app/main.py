@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from app.database import Base, engine
 from app.api.v1.wallets import router as wallet_router
 from app.api.v1.operations import router as operation_router
@@ -10,5 +11,5 @@ app.include_router(wallet_router, prefix = '/api/v1', tags = ['wallet'])
 app.include_router(operation_router, prefix = '/api/v1', tags = ['operations'])
 app.include_router(users_router, prefix='/api/v1', tags = ['users'])
 
-
+app.mount('/static', StaticFiles(directory='app/static'), name = 'static')
 Base.metadata.create_all(bind=engine)
