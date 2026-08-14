@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from unicodedata import category
 
@@ -6,13 +7,13 @@ from app.api.v1.users import get_current_user
 from app.dependency import get_db
 from app.models import User
 from app.schemas import OperationRequest, OperationResponse
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, requests
 from app.database import SessionLocal
 from app.repository import wallets as wallets_repository
 from sqlalchemy.orm import Session, Query
 from app.repository import operations as operations_repository
-from app.enum import OperationType
-from app.services.exhange_service import get_exchange_rate
+from app.enum import OperationType, CurrencyEnum
+from app.services.exhange_service import get_exchange_rate, FALLBACK_RATES
 
 
 def add_income(db: Session, current_user : User,operation: OperationRequest) -> OperationResponse:
@@ -93,7 +94,7 @@ def get_operations_list(
     return result
 
 
-def transfer_between_wallets(
+async def transfer_between_wallets(
         db:Session, user_id: int, from_wallet_id: int, to_wallet_id:int, amount: Decimal
 ) -> OperationResponse:
     from_wallet = wallets_repository.get_wallet_by_id(db, from_wallet_id, user_id)
@@ -107,9 +108,8 @@ def transfer_between_wallets(
             detail= f'Not enough money'
         )
     target_amount = amount
-    exchange_rate = 1.0
     if from_wallet.currency != to_wallet.currency:
-        exchange_rate = get_exchange_rate(
+        exchange_rate = await get_exchange_rate(
             from_wallet.currency, to_wallet.currency
         )
         target_amount = round(amount*exchange_rate,2)
