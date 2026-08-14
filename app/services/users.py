@@ -6,7 +6,6 @@ from fastapi import Depends, HTTPException
 def create_user(db:Session, login:str) -> UserResponse:
 	if users_repository.get_user(db, login):
 		raise HTTPException(status_code = 400, detail = 'User already exists')
-
-	user= users_repository.create_user(db, login)
+	user = users_repository.create_user(db, login)
 	db.commit()
 	return UserResponse.model_validate(user)

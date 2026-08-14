@@ -13,6 +13,7 @@ class User(Base):
 
 
 
+
 class Wallet(Base):
     __tablename__ = 'wallet'
 
