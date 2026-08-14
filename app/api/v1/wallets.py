@@ -2,16 +2,21 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
+
+from app.api.v1.users import get_current_user
 from app.dependency import get_db
+from app.models import User
 from app.services import wallets as wallets_service
 from app.schemas import CreateWalletRequest
 
 router = APIRouter()
 
 @router.get('/balance')
-def get_balance(wallet_name:str|None = None, db: Session = Depends(get_db)):
-    return wallets_service.get_balance(wallet_name)
+def get_balance(wallet_name:str|None = None, db: Session = Depends(get_db),
+                current_user: User = Depends(get_current_user)):
+    return wallets_service.get_balance(db, current_user, wallet_name)
 
 @router.post('/wallets')
-def create_wallet(wallet:CreateWalletRequest, db: Session = Depends(get_db)):
-    return wallets_service.create_wallet(wallet)
+def create_wallet(wallet:CreateWalletRequest, db: Session = Depends(get_db),
+                  current_user: User = Depends(get_current_user)):
+    return wallets_service.create_wallet(db,current_user, wallet)
