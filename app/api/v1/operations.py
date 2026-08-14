@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, Query
 
 from app.dependency import get_db, get_current_user
 from app.models import User
-from app.schemas import OperationRequest, OperationResponse
+from app.schemas import OperationRequest, OperationResponse, TransferCreateSchema
 from app.services import operations as operations_services
 
 router = APIRouter()
@@ -23,9 +23,19 @@ def add_expense (operation: OperationRequest, db: Session = Depends(get_db),
 
 @router.get('/operations', response_model=list[OperationResponse])
 def get_operations_list(
-    wallet_di : int | None = Query(None),
+    wallet_id : int | None = Query(None),
     date_from : datetime | None = Query(None),
     date_to : datetime|None = Query(None),
     user : User = Depends(get_current_user),
     db : Session = Depends(get_db),
 ):
+    return operations_services.get_operations_list(db, user, wallet_id, date_from, date_to)
+
+
+@router.post('/operations/transfer', response_model=OperationResponse)
+def create_transfer(
+    payload:TransferCreateSchema,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+

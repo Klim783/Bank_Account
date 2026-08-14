@@ -6,7 +6,7 @@ class CurrencyEnum(StrEnum):
 	USD = auto()
 	EUR = auto()
 
-class OperationResponse(StrEnum):
+class OperationType(StrEnum):
 	EXPENSE = auto()
 	INCOME = auto()
 	TRANSFER = auto()
