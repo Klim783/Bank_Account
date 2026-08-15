@@ -10,7 +10,8 @@ from app.schemas import OperationRequest, OperationResponse
 from fastapi import HTTPException, Depends, requests
 from app.database import SessionLocal
 from app.repository import wallets as wallets_repository
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Session
+from fastapi import Query
 from app.repository import operations as operations_repository
 from app.enum import OperationType, CurrencyEnum
 from app.services.exhange_service import get_exchange_rate, FALLBACK_RATES
