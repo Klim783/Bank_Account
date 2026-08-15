@@ -82,13 +82,13 @@ class TransferCreateSchema(BaseModel):
     @classmethod
     def wallets_must_differ(cls, v:int, info) -> int:
         if 'from_wallet_id' in info.data and v == info.data['from_wallet_id']:
-            raise ValueError['Same wallets ids!']
+            raise ValueError('Same wallets ids!')
         return v
 
     @field_validator('amount')
     @classmethod
     def amount_gt_zero(cls, v:Decimal) -> Decimal:
-        if v < 0:
+        if v <= 0:
             raise ValueError('Amount cannot be negative')
         return v
 
