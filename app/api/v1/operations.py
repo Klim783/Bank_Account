@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session, Query
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
 from app.dependency import get_db, get_current_user
 from app.models import User
