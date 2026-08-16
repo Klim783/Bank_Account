@@ -5,6 +5,7 @@
    ============================================================ */
 const state = {
   baseUrl: localStorage.getItem('ledger_base_url') || 'http://127.0.0.1:8000/api/v1',
+  token: localStorage.getItem('ledger_token') || '',
   login: localStorage.getItem('ledger_login') || '',
   wallets: [],
   operations: [],
@@ -28,7 +29,9 @@ const el = {
   authForm: $('authForm'),
   authChip: $('authChip'),
   loginInput: $('loginInput'),
+  passwordInput: $('passwordInput'),
   loginBtn: $('loginBtn'),
+  registerBtn: $('registerBtn'),
   logoutBtn: $('logoutBtn'),
   authLoginLabel: $('authLoginLabel'),
 
@@ -92,7 +95,7 @@ function toast(message, kind = 'ok') {
    ============================================================ */
 async function api(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  if (state.login) headers['Authorization'] = `Bearer ${state.login}`;
+  if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
 
   let response;
   try {
@@ -134,45 +137,60 @@ class ApiError extends Error {
 /* ============================================================
    AUTH
    ============================================================ */
-async function connect(login) {
-  const trimmed = login.trim();
-  if (!trimmed) {
-    toast('Введите логин, чтобы войти.', 'error');
-    return;
+function readCredentials() {
+  const login = el.loginInput.value.trim();
+  const password = el.passwordInput.value;
+  if (!login || !password) {
+    toast('Введите логин и пароль.', 'error');
+    return null;
   }
-  state.login = trimmed;
+  return { login, password };
+}
+
+async function register() {
+  const creds = readCredentials();
+  if (!creds) return;
 
   try {
-    await api('/users');
+    await api('/users', { method: 'POST', body: JSON.stringify(creds) });
+    toast(`Аккаунт «${creds.login}» создан. Теперь войдите.`);
   } catch (err) {
-    if (err.status === 401) {
-      try {
-        await api('/users', { method: 'POST', body: JSON.stringify({ login: trimmed }) });
-        toast(`Аккаунт «${trimmed}» создан.`);
-      } catch (createErr) {
-        toast(createErr.message, 'error');
-        state.login = '';
-        return;
-      }
-    } else {
-      toast(err.message, 'error');
-      state.login = '';
-      return;
-    }
+    toast(err.message, 'error');
+  }
+}
+
+async function login() {
+  const creds = readCredentials();
+  if (!creds) return;
+
+  let tokenResponse;
+  try {
+    tokenResponse = await api('/login', { method: 'POST', body: JSON.stringify(creds) });
+  } catch (err) {
+    toast(err.message, 'error');
+    return;
   }
 
+  state.token = tokenResponse.access_token;
+  state.login = creds.login;
+  localStorage.setItem('ledger_token', state.token);
   localStorage.setItem('ledger_login', state.login);
-  enterDashboard();
+  el.passwordInput.value = '';
+
+  await enterDashboard();
 }
 
 function logout() {
+  state.token = '';
   state.login = '';
+  localStorage.removeItem('ledger_token');
   localStorage.removeItem('ledger_login');
   el.dashboard.classList.add('hidden');
   el.gate.classList.remove('hidden');
   el.authChip.classList.add('hidden');
   el.authForm.classList.remove('hidden');
   el.loginInput.value = '';
+  el.passwordInput.value = '';
 }
 
 async function enterDashboard() {
@@ -181,6 +199,16 @@ async function enterDashboard() {
   el.authLoginLabel.textContent = state.login;
   el.gate.classList.add('hidden');
   el.dashboard.classList.remove('hidden');
+
+  try {
+    await api('/users'); // проверяем, что токен ещё валиден
+  } catch (err) {
+    if (err.status === 401) {
+      toast('Сессия истекла, войдите снова.', 'error');
+      logout();
+      return;
+    }
+  }
 
   await refreshAll();
 }
@@ -455,9 +483,10 @@ el.applyFilters.addEventListener('click', () => loadOperations());
 /* ============================================================
    AUTH WIRING
    ============================================================ */
-el.loginBtn.addEventListener('click', () => connect(el.loginInput.value));
-el.loginInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') connect(el.loginInput.value);
+el.loginBtn.addEventListener('click', login);
+el.registerBtn.addEventListener('click', register);
+el.passwordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') login();
 });
 el.logoutBtn.addEventListener('click', logout);
 
@@ -481,8 +510,8 @@ el.saveBaseUrl.addEventListener('click', () => {
    INIT
    ============================================================ */
 (function init() {
-  if (state.login) {
+  if (state.token) {
     el.loginInput.value = state.login;
-    connect(state.login);
+    enterDashboard();
   }
 })();
