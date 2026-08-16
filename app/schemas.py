@@ -197,3 +197,16 @@ class TransferCreateSchema(BaseModel):
 
 class TotalBalance(BaseModel):
     total_balance: Decimal
+
+
+class UserRequest(BaseModel):
+    login:str = Field(..., max_length=127)
+    password: str = Field(..., min_length=6, max_length=127)
+
+class LoginRequest(BaseModel):
+    login:str
+    password:str
+
+class TokenResponse(BaseModel):
+    access_token:str
+    token_type:str = 'bearer'
