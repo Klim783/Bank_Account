@@ -9,7 +9,7 @@ from app.repository import wallets as wallets_repository
 from sqlalchemy.orm import Session
 from app.services import exhange_service
 
-async def get_total_balance(db: Session,current_user: User) -> TotalBalance:
+async def get_total_balance (db: Session,current_user: User) -> TotalBalance:
     wallets = wallets_repository.get_all_wallets(db, current_user.id)
     total_balance = Decimal(0)
     for wallet in wallets:
@@ -18,7 +18,7 @@ async def get_total_balance(db: Session,current_user: User) -> TotalBalance:
         else:
             exchange_rate = await exhange_service.get_exchange_rate(wallet.currency, CurrencyEnum.RUB)
             total_balance += exchange_rate * wallet.balance
-        return TotalBalance(total_balance = total_balance)
+    return TotalBalance(total_balance = total_balance)
 
 def create_wallet(db: Session, current_user: User, wallet : CreateWalletRequest) -> WalletResponse:
     if wallets_repository.is_wallet_exist(db, current_user.id, wallet.name):

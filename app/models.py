@@ -52,7 +52,6 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     login: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(nullable=False)
 
     wallets: Mapped[list["Wallet"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 

@@ -1,14 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
-
-from unicodedata import category
-
-from app.api.v1.users import get_current_user
-from app.dependency import get_db
 from app.models import User
 from app.schemas import OperationRequest, OperationResponse
 from fastapi import HTTPException, Depends, requests
-from app.database import SessionLocal
 from app.repository import wallets as wallets_repository
 from sqlalchemy.orm import Session
 from fastapi import Query
@@ -116,7 +110,7 @@ async def transfer_between_wallets(
         target_amount = round(amount*exchange_rate,2)
 
     from_wallet.balance = round(from_wallet.balance - amount,2)
-    to_wallet.balance = round(to_wallet.balance + amount,2)
+    to_wallet.balance = round(to_wallet.balance + target_amount,2)
     operation = operations_repository.create_operation(
         db = db,
         wallet_id = from_wallet.id,

@@ -26,3 +26,22 @@ def create_operation(
 	db.add(operation)
 	db.flush()
 	return operation
+
+
+from datetime import datetime
+from sqlalchemy.orm import Session
+from app.models import Operation
+
+
+def get_operations_list(
+    db: Session,
+    wallet_ids: list[int],
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
+) -> list[Operation]:
+    query = db.query(Operation).filter(Operation.wallet_id.in_(wallet_ids))
+    if date_from:
+        query = query.filter(Operation.created_at >= date_from)
+    if date_to:
+        query = query.filter(Operation.created_at <= date_to)
+    return query.order_by(Operation.created_at.desc()).all()

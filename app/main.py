@@ -13,3 +13,12 @@ app.include_router(users_router, prefix='/api/v1', tags = ['users'])
 
 app.mount('/static', StaticFiles(directory='app/static'), name = 'static')
 Base.metadata.create_all(bind=engine)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # на проде сузить
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

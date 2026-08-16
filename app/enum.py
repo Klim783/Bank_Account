@@ -1,12 +1,11 @@
-from enum import auto, StrEnum
+from enum import Enum
 
+class CurrencyEnum(str, Enum):
+    RUB = "RUB"
+    USD = "USD"
+    EUR = "EUR"
 
-class CurrencyEnum(StrEnum):
-	RUB = auto()
-	USD = auto()
-	EUR = auto()
-
-class OperationType(StrEnum):
-	EXPENSE = auto()
-	INCOME = auto()
-	TRANSFER = auto()
+class OperationType(str, Enum):
+    EXPENSE = "EXPENSE"
+    INCOME = "INCOME"
+    TRANSFER = "TRANSFER"

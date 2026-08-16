@@ -1,17 +1,22 @@
 from decimal import Decimal
 from typing import Dict, Tuple
 import aiohttp
-from fastapi import requests
-
 from app.enum import CurrencyEnum
 
-FALLBACK_RATES: Dict[Tuple[str, str], Decimal] = {
-    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(95.0)),
-    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(0.92)),
-    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(103.26)),
-    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(0.0105)),
-    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(1.087)),
-    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(0.0097)),
+# FALLBACK_RATES: Dict[Tuple[str, str], Decimal] = {
+#     (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(95.0)),
+#     (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(0.92)),
+#     (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(103.26)),
+#     (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(0.0105)),
+#     (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(1.087)),
+#     (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal(str(0.0097)),
+# }
+
+FALLBACK_RATES = {
+    (CurrencyEnum.USD, CurrencyEnum.RUB): Decimal("95.0"),
+    (CurrencyEnum.EUR, CurrencyEnum.RUB): Decimal("103.26"),
+    (CurrencyEnum.USD, CurrencyEnum.EUR): Decimal("0.92"),
+    (CurrencyEnum.RUB, CurrencyEnum.USD): Decimal("0.0105"),
 }
 
 
