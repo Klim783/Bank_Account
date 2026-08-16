@@ -1,10 +1,205 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — учёт кошельков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-$END$
+
+<div class="paper-grain"></div>
+
+<header class="topbar">
+  <div class="topbar__brand">
+    <span class="brand-mark">₽</span>
+    <div class="brand-text">
+      <span class="brand-name">Ledger</span>
+      <span class="brand-sub">учёт кошельков</span>
+    </div>
+  </div>
+
+  <div class="topbar__right">
+    <button class="icon-btn" id="settingsToggle" title="Настройки соединения" aria-label="Настройки">⚙</button>
+
+    <div class="auth" id="authArea">
+      <div class="auth__form" id="authForm">
+        <input type="text" id="loginInput" placeholder="логин" autocomplete="username" spellcheck="false">
+        <button class="btn btn--ghost" id="loginBtn">Войти</button>
+      </div>
+      <div class="auth__chip hidden" id="authChip">
+        <span class="auth__dot"></span>
+        <span id="authLoginLabel"></span>
+        <button class="icon-btn icon-btn--sm" id="logoutBtn" title="Выйти">✕</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="settings-panel hidden" id="settingsPanel">
+  <label for="baseUrlInput">Адрес API</label>
+  <div class="settings-panel__row">
+    <input type="text" id="baseUrlInput" placeholder="http://127.0.0.1:8000/api/v1">
+    <button class="btn btn--ghost" id="saveBaseUrl">Сохранить</button>
+  </div>
+  <p class="settings-panel__hint">Хранится локально в этом браузере. Сервер должен разрешать CORS-запросы с этой страницы.</p>
+</div>
+
+<main class="app" id="app">
+
+  <section class="gate" id="gate">
+    <div class="gate__inner">
+      <p class="gate__eyebrow">Прежде чем открыть книгу</p>
+      <h1 class="gate__title">Войдите под своим логином</h1>
+      <p class="gate__text">Логин служит ключом доступа. Если аккаунта ещё нет, он будет создан автоматически при первом входе.</p>
+    </div>
+  </section>
+
+  <div class="dashboard hidden" id="dashboard">
+
+    <section class="balance">
+      <div class="balance__stub"></div>
+      <div class="balance__body">
+        <p class="balance__label">Общий баланс</p>
+        <div class="balance__figure">
+          <span class="balance__digits" id="balanceDigits">0.00</span>
+          <span class="balance__ccy">RUB</span>
+        </div>
+        <p class="balance__note">Пересчитано по курсу на текущий момент</p>
+      </div>
+      <div class="balance__actions">
+        <button class="pill pill--income" id="openIncome">
+          <span class="pill__glyph">＋</span> Доход
+        </button>
+        <button class="pill pill--expense" id="openExpense">
+          <span class="pill__glyph">－</span> Расход
+        </button>
+        <button class="pill pill--transfer" id="openTransfer">
+          <span class="pill__glyph">⇄</span> Перевод
+        </button>
+      </div>
+    </section>
+
+    <section class="wallets">
+      <div class="section-head">
+        <h2>Кошельки</h2>
+        <span class="section-head__count" id="walletCount">0</span>
+      </div>
+      <div class="wallets__grid" id="walletsGrid">
+        <!-- wallet cards injected here -->
+        <button class="wallet-card wallet-card--add" id="openAddWallet">
+          <span class="wallet-card--add__plus">+</span>
+          <span>Новый кошелёк</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="operations">
+      <div class="section-head">
+        <h2>Операции</h2>
+        <div class="filters">
+          <select id="filterWallet">
+            <option value="">Все кошельки</option>
+          </select>
+          <input type="date" id="filterFrom">
+          <span class="filters__dash">—</span>
+          <input type="date" id="filterTo">
+          <button class="btn btn--ghost btn--sm" id="applyFilters">Показать</button>
+        </div>
+      </div>
+
+      <div class="ledger-table">
+        <div class="ledger-table__head">
+          <span>Дата</span>
+          <span>Кошелёк</span>
+          <span>Категория</span>
+          <span>Тип</span>
+          <span class="align-right">Сумма</span>
+        </div>
+        <div class="ledger-table__body" id="operationsBody">
+          <div class="empty-row" id="operationsEmpty">Операций пока нет — самое время что-то записать.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Modal: create wallet -->
+<div class="modal-overlay hidden" id="modalWallet">
+  <div class="modal">
+    <div class="modal__head">
+      <h3>Новый кошелёк</h3>
+      <button class="icon-btn" data-close-modal>✕</button>
+    </div>
+    <form id="formWallet" class="modal__form">
+      <label>Название
+        <input type="text" name="name" maxlength="127" required placeholder="Например, Наличные">
+      </label>
+      <label>Начальный баланс
+        <input type="number" name="initial_balance" step="0.01" min="0" value="0" required>
+      </label>
+      <label>Валюта
+        <select name="currency" required>
+          <option value="RUB">RUB — рубль</option>
+          <option value="USD">USD — доллар</option>
+          <option value="EUR">EUR — евро</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn--primary">Создать кошелёк</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: income / expense -->
+<div class="modal-overlay hidden" id="modalOperation">
+  <div class="modal">
+    <div class="modal__head">
+      <h3 id="operationTitle">Доход</h3>
+      <button class="icon-btn" data-close-modal>✕</button>
+    </div>
+    <form id="formOperation" class="modal__form">
+      <label>Кошелёк
+        <select name="wallet_name" id="operationWalletSelect" required></select>
+      </label>
+      <label>Сумма
+        <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+      </label>
+      <label>Описание
+        <input type="text" name="description" maxlength="255" placeholder="Необязательно">
+      </label>
+      <button type="submit" class="btn btn--primary" id="operationSubmit">Записать</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: transfer -->
+<div class="modal-overlay hidden" id="modalTransfer">
+  <div class="modal">
+    <div class="modal__head">
+      <h3>Перевод между кошельками</h3>
+      <button class="icon-btn" data-close-modal>✕</button>
+    </div>
+    <form id="formTransfer" class="modal__form">
+      <label>Откуда
+        <select name="from_wallet_id" id="transferFromSelect" required></select>
+      </label>
+      <label>Куда
+        <select name="to_wallet_id" id="transferToSelect" required></select>
+      </label>
+      <label>Сумма
+        <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+      </label>
+      <button type="submit" class="btn btn--primary">Перевести</button>
+    </form>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="js/app.js"></script>
 </body>
 </html>
